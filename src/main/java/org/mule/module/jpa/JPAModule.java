@@ -996,6 +996,7 @@ public class JPAModule implements MuleContextAware {
 
         EntityManager entityManager = JPAUtils.getTransactionalResource(entityManagerFactory);
 
+
         if (entityManager == null) {
             throw new IllegalStateException("Could not obtain an EntityManager");
         }
