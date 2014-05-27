@@ -11,19 +11,6 @@
         http://www.mulesoft.org/schema/mule/jpa http://www.mulesoft.org/schema/mule/jpa/1.0/mule-jpa.xsd">
 
     <spring:beans>
-        <util:map id="jpaPropertyMap">
-            <spring:entry key="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <spring:entry key="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
-            <spring:entry key="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.ImprovedNamingStrategy"/>
-            <spring:entry key="hibernate.connection.charSet" value="UTF-8"/>
-        </util:map>
-
-        <spring:bean class="org.apache.commons.dbcp.BasicDataSource"
-                     destroy-method="close" id="dataSource">
-            <spring:property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
-            <spring:property name="url" value="jdbc:hsqldb:mem:mule"/>
-        </spring:bean>
-
         <spring:bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
             <spring:property name="entityManagerFactory" ref="entityManagerFactory"/>
         </spring:bean>

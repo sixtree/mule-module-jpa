@@ -784,7 +784,9 @@ public class JPATransactionFactory implements UniversalTransactionFactory {
     }
 
     public Transaction beginTransaction(MuleContext muleContext) throws TransactionException {
-        return new JPATransaction(muleContext);
+    	JPATransaction tx = new JPATransaction(muleContext);
+    	tx.begin();
+    	return tx;
     }
 
     public boolean isTransacted() {
