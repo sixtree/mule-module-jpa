@@ -794,11 +794,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class JPAModuleModuleTest extends FunctionalTestCase {
-    @Override
-    protected String getConfigResources() {
-        return "mule-config.xml";
-    }
+public abstract class JPAModuleModuleTestBase extends FunctionalTestCase {
 
     EntityManagerFactory entityManagerFactory;
 

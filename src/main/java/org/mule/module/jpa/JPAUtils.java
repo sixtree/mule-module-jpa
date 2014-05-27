@@ -770,12 +770,15 @@
 
 package org.mule.module.jpa;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleException;
 import org.mule.api.transaction.Transaction;
 import org.mule.api.transaction.TransactionException;
 import org.mule.config.i18n.CoreMessages;
 import org.mule.transaction.TransactionCoordination;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
@@ -783,33 +786,61 @@ import javax.persistence.EntityManagerFactory;
  */
 public class JPAUtils {
 
-    /**
-     * Fetches an EntityManager in a transaction-aware manner.
-     */
-    @SuppressWarnings({"unchecked"})
-    static public <T> T getTransactionalResource(EntityManagerFactory entityManagerFactory) {
-        Transaction currentTx = TransactionCoordination.getInstance().getTransaction();
-        if (currentTx != null) {
-            if (currentTx.hasResource(entityManagerFactory)) {
-                return (T) currentTx.getResource(entityManagerFactory);
-            } else {
+	private static final Log logger = LogFactory.getLog(JPAUtils.class);
 
-                Object connectionResource = entityManagerFactory.createEntityManager();
+	/**
+	 * Fetches an EntityManager in a transaction-aware manner.
+	 */
+	@SuppressWarnings({ "unchecked" })
+	static public <T> T getTransactionalResource(
+			EntityManagerFactory entityManagerFactory) {
+		Transaction currentTx = TransactionCoordination.getInstance()
+				.getTransaction();
 
-                try {
-                    if (currentTx.supports(entityManagerFactory, connectionResource)) {
-                        currentTx.bindResource(entityManagerFactory, connectionResource);
-                    } else {
-                        throw new TransactionException(CoreMessages.createStaticMessage("Endpoint is transactional but transaction does not support it"));
-                    }
-                } catch (MuleException ex) {
-                    throw new JPAException(ex);
-                }
-                return (T) connectionResource;
-            }
-        } else {
-            return (T) entityManagerFactory.createEntityManager();
-        }
+		if (currentTx != null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Transaction in scope: " + currentTx);
+			}
+			if (currentTx.hasResource(entityManagerFactory)) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Transaction already bound to "
+							+ entityManagerFactory);
+				}
+				return (T) currentTx.getResource(entityManagerFactory);
+			} else {
 
-    }
+				Object connectionResource = entityManagerFactory
+						.createEntityManager();
+
+				try {
+					if (currentTx.supports(entityManagerFactory,
+							connectionResource)) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Binding new entityManager "
+									+ connectionResource + " to transaction "
+									+ currentTx);
+						}
+						currentTx.bindResource(entityManagerFactory,
+								connectionResource);
+					} else {
+						throw new TransactionException(
+								CoreMessages
+										.createStaticMessage("Endpoint is transactional but transaction does not support it"));
+					}
+				} catch (MuleException ex) {
+					throw new JPAException(ex);
+				}
+				return (T) connectionResource;
+			}
+		} else {
+			EntityManager entityManager = entityManagerFactory
+					.createEntityManager();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Returning non-transactional entityManager "
+						+ entityManager);
+			}
+			return (T) entityManager;
+		}
+
+	}
 }
