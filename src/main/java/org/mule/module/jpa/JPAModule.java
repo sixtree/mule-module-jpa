@@ -786,6 +786,7 @@ import org.mule.api.annotations.display.Icons;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
 import org.mule.api.context.MuleContextAware;
+import org.mule.api.registry.RegistrationException;
 import org.mule.module.jpa.command.*;
 import org.mule.util.StringUtils;
 
@@ -825,6 +826,11 @@ public class JPAModule implements MuleContextAware {
     public void connect() throws Exception {
         muleContext.getTransactionFactoryManager().registerTransactionFactory(EntityManagerFactory.class,
                 new JPATransactionFactory());
+        try{
+        	muleContext.getRegistry().registerObject("jpa.inject", new PersistenceContextProcessor());
+        } catch (RegistrationException re) {
+        	logger.warn("JPA context injections processor already registered.");
+        }
     }
 
     public void setMuleContext(MuleContext muleContext) {
